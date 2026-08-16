@@ -70,7 +70,7 @@ export const setupCheckoutCallback = (bot: any) => {
         const data = await getOrderById(order_id);
         if (!data) throw new Error('Order not found after creation');
         
-        const qrisUrl = process.env.QRIS_IMAGE_URL || 'https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg';
+        const qrisUrl = process.env.QRIS_IMAGE_URL || 'https://raw.githubusercontent.com/ardiansyah-23/TELEGRAM_BOT_ECOMMERCE/main/public/qris.jpg';
         const adminUsername = process.env.ADMIN_USERNAME || 'Admin'; // e.g. "admin_digitalia"
         
         let msg = `🧾 **PESANAN BERHASIL DIBUAT**\n\n`;

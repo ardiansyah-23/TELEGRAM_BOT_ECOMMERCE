@@ -91,7 +91,7 @@ export const setupOrdersCallback = (bot: any) => {
       const { order } = data;
       
       // Mengambil URL QRIS dari environment variables atau menggunakan placeholder
-      const qrisUrl = process.env.QRIS_IMAGE_URL || 'https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg';
+      const qrisUrl = process.env.QRIS_IMAGE_URL || 'https://raw.githubusercontent.com/ardiansyah-23/TELEGRAM_BOT_ECOMMERCE/main/public/qris.jpg';
       
       let msg = `💳 PEMBAYARAN MANUAL QRIS\n\n`;
       msg += `Pesanan: ${order.order_number}\n`;
