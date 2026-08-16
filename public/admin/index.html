@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-gray-100 font-sans" x-data="adminApp()" x-init="init()">
+
+    <!-- Loading Overlay -->
+    <div x-show="loading" class="fixed inset-0 bg-white/80 z-50 flex items-center justify-center">
+        <div class="text-xl font-bold text-gray-700 animate-pulse">Loading...</div>
+    </div>
+
+    <!-- Error Screen -->
+    <div x-show="error" class="fixed inset-0 bg-red-50 z-50 flex flex-col items-center justify-center p-4 text-center">
+        <h2 class="text-2xl font-bold text-red-600 mb-2">Access Denied</h2>
+        <p class="text-gray-700" x-text="error"></p>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="min-h-screen flex" x-show="!loading && !error" style="display: none;">
+        
+        <!-- Sidebar -->
+        <aside class="w-64 bg-slate-900 text-white flex flex-col">
+            <div class="p-4 border-b border-slate-700">
+                <h1 class="text-xl font-bold">Admin Dashboard</h1>
+            </div>
+            
+            <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+                <template x-for="item in navItems" :key="item.id">
+                    <button 
+                        @click="currentTab = item.id; loadData(item.id)"
+                        :class="currentTab === item.id ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800'"
+                        class="w-full flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors"
+                    >
+                        <span class="mr-3" x-text="item.icon"></span>
+                        <span x-text="item.label"></span>
+                    </button>
+                </template>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col h-screen overflow-hidden">
+            <!-- Header -->
+            <header class="bg-white shadow px-6 py-4 flex justify-between items-center z-10">
+                <h2 class="text-xl font-bold text-gray-800" x-text="navItems.find(i => i.id === currentTab)?.label"></h2>
+                <div class="text-sm text-gray-500">
+                    Logged in as <span class="font-bold text-gray-900" x-text="adminUser?.first_name"></span>
+                </div>
+            </header>
+
+            <!-- Scrollable Content Area -->
+            <div class="flex-1 overflow-y-auto p-6 bg-gray-50">
+                
+                <!-- Dashboard Tab -->
+                <div x-show="currentTab === 'dashboard'">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <!-- Stats Cards -->
+                        <div class="bg-white rounded-lg shadow p-6 border border-gray-100">
+                            <h3 class="text-gray-500 text-sm font-medium uppercase tracking-wider">Total Users</h3>
+                            <p class="mt-2 text-3xl font-bold text-gray-900" x-text="stats.totalUsers"></p>
+                        </div>
+                        <div class="bg-white rounded-lg shadow p-6 border border-gray-100">
+                            <h3 class="text-gray-500 text-sm font-medium uppercase tracking-wider">Premium Users</h3>
+                            <p class="mt-2 text-3xl font-bold text-blue-600" x-text="stats.premiumUsers"></p>
+                        </div>
+                        <div class="bg-white rounded-lg shadow p-6 border border-gray-100">
+                            <h3 class="text-gray-500 text-sm font-medium uppercase tracking-wider">Pending Orders</h3>
+                            <p class="mt-2 text-3xl font-bold text-amber-500" x-text="stats.pendingOrders"></p>
+                        </div>
+                        <div class="bg-white rounded-lg shadow p-6 border border-gray-100">
+                            <h3 class="text-gray-500 text-sm font-medium uppercase tracking-wider">Gross Revenue</h3>
+                            <p class="mt-2 text-3xl font-bold text-green-600">Rp <span x-text="stats.revenue?.toLocaleString('id-ID')"></span></p>
+                        </div>
+                        <div class="bg-white rounded-lg shadow p-6 border border-gray-100">
+                            <h3 class="text-gray-500 text-sm font-medium uppercase tracking-wider">Bot Events</h3>
+                            <p class="mt-2 text-3xl font-bold text-purple-600" x-text="stats.botEvents"></p>
+                        </div>
+                        <div class="bg-white rounded-lg shadow p-6 border border-gray-100">
+                            <h3 class="text-gray-500 text-sm font-medium uppercase tracking-wider">Failed Jobs</h3>
+                            <p class="mt-2 text-3xl font-bold text-red-600" x-text="stats.scheduler?.failed"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Health Tab -->
+                <div x-show="currentTab === 'health'">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">SYSTEM STATUS</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <template x-for="comp in healthData" :key="comp.component">
+                            <div class="bg-white rounded-lg shadow p-4 border border-gray-200 flex items-center justify-between">
+                                <div class="capitalize font-bold text-gray-700" x-text="comp.component"></div>
+                                <div class="flex items-center">
+                                    <span class="mr-2 text-2xl" x-text="comp.status === 'healthy' ? '🟢' : (comp.status === 'degraded' ? '🟡' : '🔴')"></span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Logs Tab -->
+                <div x-show="currentTab === 'logs'" class="bg-white shadow rounded-lg overflow-hidden border border-gray-200">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Level</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Message</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <template x-for="log in logsData" :key="log.id">
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="new Date(log.created_at).toLocaleString()"></td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            <span :class="{
+                                                'bg-red-100 text-red-800': log.level === 'error',
+                                                'bg-yellow-100 text-yellow-800': log.level === 'warn',
+                                                'bg-blue-100 text-blue-800': log.level === 'info'
+                                            }" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" x-text="log.level"></span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" x-text="log.action"></td>
+                                        <td class="px-6 py-4 text-sm text-gray-500" x-text="log.message"></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Shared Table Container (For Users, Products, Orders, etc) -->
+                <div x-show="['users', 'products', 'orders', 'payments', 'campaigns', 'tickets'].includes(currentTab)" class="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
+                    <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                        <input type="text" placeholder="Search..." class="border rounded-md px-3 py-1.5 text-sm w-64 focus:ring-blue-500 focus:border-blue-500">
+                        <button class="bg-blue-600 text-white px-4 py-1.5 rounded-md text-sm font-medium hover:bg-blue-700">Add New</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <!-- Dynamic Headers based on tab -->
+                                    <template x-for="col in getTableColumns()" :key="col">
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" x-text="col"></th>
+                                    </template>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <template x-for="row in currentData" :key="row.id">
+                                    <tr>
+                                        <!-- Dynamic Cells -->
+                                        <template x-for="col in getTableColumns()" :key="col">
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="row[col.toLowerCase()] || '-'"></td>
+                                        </template>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Empty State -->
+                    <div x-show="currentData.length === 0" class="text-center py-10 text-gray-500">
+                        No data available.
+                    </div>
+                </div>
+                
+                <div x-show="currentTab === 'settings'" class="bg-white shadow rounded-lg p-6 max-w-2xl">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">System Settings</h3>
+                    <!-- Settings form mock -->
+                    <p class="text-sm text-gray-500">Use this section to manage maintenance mode, global configurations, and other system-wide parameters.</p>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="/admin/app.js"></script>
+</body>
+</html>

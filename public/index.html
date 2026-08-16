@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Toko Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Navigation -->
+        <nav class="bottom-nav" id="bottomNav">
+            <button class="nav-item active" data-tab="home">🏠 Home</button>
+            <button class="nav-item" data-tab="products">🛍 Produk</button>
+            <button class="nav-item" data-tab="wishlist">❤️ Wishlist</button>
+            <button class="nav-item" data-tab="cart" id="navCartBtn">🛒 Keranjang</button>
+            <button class="nav-item" data-tab="orders">📦 Pesanan</button>
+            <button class="nav-item" data-tab="support">💬 Bantuan</button>
+            <button class="nav-item" data-tab="settings">⚙️ Settings</button>
+        </nav>
+
+        <!-- Pages -->
+        <main class="content">
+            <!-- Loading State -->
+            <div id="loading" class="page active" style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                <div class="loader">Loading...</div>
+            </div>
+
+            <!-- Home -->
+            <div id="home" class="page">
+                <div class="card profile-card">
+                    <h2 id="userName">👋 Halo, User</h2>
+                    <div class="profile-stats">
+                        <div class="stat-badge" id="userMembership">💎 Regular</div>
+                        <div class="stat-badge" id="userPoints">💰 0 Poin</div>
+                    </div>
+                </div>
+                
+                <div class="grid-menu">
+                    <button class="menu-btn" onclick="app.switchTab('products')">🛍 Lihat Produk</button>
+                    <button class="menu-btn" onclick="app.switchTab('orders')">📦 Riwayat Pesanan</button>
+                    <button class="menu-btn" onclick="app.switchTab('support')">💬 Bantuan & Tiket</button>
+                </div>
+            </div>
+
+            <!-- Products -->
+            <div id="products" class="page">
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <input type="text" id="searchInput" placeholder="Cari produk..." class="form-control" style="flex: 1;">
+                    <button class="btn-primary" onclick="app.searchProducts()">Cari</button>
+                </div>
+                <h2>Katalog Produk</h2>
+                <div class="product-list" id="productList"></div>
+            </div>
+
+            <!-- Wishlist -->
+            <div id="wishlist" class="page">
+                <h2>❤️ Wishlist Saya</h2>
+                <div class="product-list" id="wishlistList"></div>
+            </div>
+
+            <!-- Cart -->
+            <div id="cart" class="page">
+                <h2>Keranjang</h2>
+                <div id="cartList" class="cart-list"></div>
+                <div class="cart-summary" id="cartSummary" style="display: none;">
+                    <div class="summary-row">
+                        <span>Subtotal:</span>
+                        <span id="cartSubtotal">Rp 0</span>
+                    </div>
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label>Catatan Pesanan:</label>
+                        <textarea id="orderNote" class="form-control" placeholder="Opsional (misal: Kirim sore hari)"></textarea>
+                    </div>
+                    <button class="btn-primary" id="checkoutBtn" onclick="app.checkout()" style="margin-top: 15px;">Bayar Sekarang</button>
+                </div>
+                <div id="cartEmpty" class="empty-state">Keranjang Anda kosong.</div>
+            </div>
+
+            <!-- Orders -->
+            <div id="orders" class="page">
+                <h2>Pesanan Saya</h2>
+                <div id="orderList" class="order-list"></div>
+            </div>
+
+            <!-- Support -->
+            <div id="support" class="page">
+                <h2>Pusat Bantuan</h2>
+                <button class="btn-primary" onclick="app.openNewTicketModal()" style="margin-bottom: 15px;">🎫 Buat Tiket Baru</button>
+                <div id="ticketList" class="ticket-list"></div>
+            </div>
+
+            <!-- Settings -->
+            <div id="settings" class="page">
+                <h2>Preferensi Notifikasi</h2>
+                <div id="notificationSettings" class="settings-list"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Product Detail Modal -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="app.closeModal()">&times;</span>
+            <h3 id="modalProductName">Nama Produk</h3>
+            <p id="modalProductPrice" class="price">Rp 0</p>
+            <p id="modalProductStock" class="stock">Stok: 0</p>
+            <div id="modalProductVariants" style="margin: 10px 0;"></div>
+            <p id="modalProductDesc">Deskripsi...</p>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="modalAddWishlist" onclick="app.addToWishlist()">❤️ Wishlist</button>
+                <button class="btn-primary" id="modalAddToCart" onclick="app.addToCart()">🛒 Tambah</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Ticket Modal -->
+    <div id="newTicketModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="app.closeTicketModal()">&times;</span>
+            <h3>Buat Tiket Bantuan</h3>
+            <div class="form-group">
+                <label>Kategori Masalah</label>
+                <select id="ticketCategory" class="form-control"></select>
+            </div>
+            <div class="form-group">
+                <label>Subjek</label>
+                <input type="text" id="ticketSubject" class="form-control" placeholder="Ringkasan masalah">
+            </div>
+            <div class="form-group">
+                <label>Pesan</label>
+                <textarea id="ticketMessage" class="form-control" rows="4" placeholder="Jelaskan detail kendala Anda"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-primary" onclick="app.submitTicket()">Kirim Tiket</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+</html>
