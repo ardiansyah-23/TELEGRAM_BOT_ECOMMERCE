@@ -8,7 +8,7 @@
     "test:unit": "vitest run tests/unit",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
-    "build": "tsc",
+    "build:tsc": "tsc",
     "lint": "echo \"Lint not configured, skipping\""
   },
   "keywords": [],
