@@ -28,7 +28,7 @@ ON CONFLICT (key) DO NOTHING;
 
 -- Performance Indexes for Dashboard Aggregation & Searching
 CREATE INDEX IF NOT EXISTS idx_users_created_at ON users(created_at);
-CREATE INDEX IF NOT EXISTS idx_users_last_seen ON users(last_seen);
+CREATE INDEX IF NOT EXISTS idx_users_last_seen ON users(last_seen_at);
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
 CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at);
 CREATE INDEX IF NOT EXISTS idx_payments_status ON payments(status);
