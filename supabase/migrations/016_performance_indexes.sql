@@ -34,4 +34,4 @@ CREATE INDEX IF NOT EXISTS idx_payments_status ON payments(status);
 
 -- 6. Support Tickets
 -- Index for support tickets by status
-CREATE INDEX IF NOT EXISTS idx_tickets_status ON support_tickets(status);
+CREATE INDEX IF NOT EXISTS idx_tickets_status ON tickets(status);
