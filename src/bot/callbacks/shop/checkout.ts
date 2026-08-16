@@ -1,6 +1,7 @@
 import { InlineKeyboard } from 'grammy';
 import { getCart } from '../../../database/cart';
 import { checkoutCartWithVoucherAtomic } from '../../../database/coupons';
+import { getOrderById } from '../../../database/orders';
 
 export const setupCheckoutCallback = (bot: any) => {
   bot.callbackQuery('shop:checkout', async (ctx: any) => {
@@ -66,8 +67,31 @@ export const setupCheckoutCallback = (bot: any) => {
       const order_id = await checkoutCartWithVoucherAtomic(telegram_id, order_number, coupon_code);
       
       if (order_id) {
-        const kb = new InlineKeyboard().text('💳 BAYAR SEKARANG', `shop:pay:${order_id}`);
-        await ctx.editMessageText(`🧾 PESANAN DIBUAT\n\nOrder: ${order_number}\n\nStatus: Menunggu pembayaran\n\nKlik tombol di bawah untuk melanjutkan pembayaran.`, { reply_markup: kb });
+        const data = await getOrderById(order_id);
+        if (!data) throw new Error('Order not found after creation');
+        
+        const qrisUrl = process.env.QRIS_IMAGE_URL || 'https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg';
+        const adminUsername = process.env.ADMIN_USERNAME || 'Admin'; // e.g. "admin_digitalia"
+        
+        let msg = `🧾 **PESANAN BERHASIL DIBUAT**\n\n`;
+        msg += `Order: ${order_number}\n`;
+        msg += `Total Tagihan: **Rp ${data.order.total.toLocaleString('id-ID')}**\n\n`;
+        msg += `💳 **Instruksi Pembayaran:**\n`;
+        msg += `Silakan scan gambar QRIS di bawah ini untuk melakukan pembayaran.\n\n`;
+        msg += `Jika sudah berhasil transfer, silakan klik tombol "📸 Kirim Bukti Pembayaran" di bawah ini.\n\n`;
+        msg += `Atau hubungi Admin via Telegram: @${adminUsername}`;
+        
+        const kb = new InlineKeyboard()
+          .text('📸 Kirim Bukti Pembayaran', `shop:payment_proof:${order_id}`)
+          .row()
+          .text('📦 Lihat Pesanan', `shop:order:${order_id}`);
+          
+        await ctx.deleteMessage();
+        await ctx.replyWithPhoto(qrisUrl, {
+          caption: msg,
+          reply_markup: kb,
+          parse_mode: 'Markdown'
+        });
       } else {
         await ctx.editMessageText('❌ Gagal memproses pesanan.');
       }
