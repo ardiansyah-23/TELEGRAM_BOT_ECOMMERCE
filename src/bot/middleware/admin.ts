@@ -7,7 +7,7 @@ export const requireAdmin = async (ctx: MyContext, next: NextFunction) => {
     return;
   }
     const user = await getUserByTelegramId(ctx.from.id);
-    if (!user || !user.is_admin) {
+    if (!user || user.role !== 'admin') {
       if (ctx.callbackQuery) {
         await ctx.answerCallbackQuery('Akses ditolak: Hanya untuk Admin.');
       } else {

@@ -17,7 +17,7 @@ export const setupProfileCommand = (bot: Bot) => {
 Nama: ${user.first_name || '-'} ${user.last_name || ''}
 Username: ${user.username ? '@' + user.username : '-'}
 Telegram ID: ${user.telegram_id}
-Role: ${user.is_admin ? 'Admin' : 'User'}
+Role: ${user.role === 'admin' ? 'Admin' : 'User'}
 Terdaftar: ${new Date(user.created_at).toLocaleString('id-ID')}
 Terakhir aktif: ${new Date(user.last_seen_at).toLocaleString('id-ID')}`;
 

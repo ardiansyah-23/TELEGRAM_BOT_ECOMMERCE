@@ -56,14 +56,12 @@ bot.use(createConversation(addProductConversation as any) as any);
 bot.use(createConversation(checkoutVoucherConversation as any) as any);
 bot.use(createConversation(createReminderConversation as any) as any);
 
-setupStartCommand(bot as any);
-setupSubscribeCommands(bot as any);
-
 // Global middleware for auto-register and logging
 bot.use(autoRegisterAndLogMiddleware);
 
 // Setup commands
 setupStartCommand(bot as any);
+setupSubscribeCommands(bot as any);
 setupHelpCommand(bot as any);
 setupProfileCommand(bot as any);
 setupAdminCommand(bot);

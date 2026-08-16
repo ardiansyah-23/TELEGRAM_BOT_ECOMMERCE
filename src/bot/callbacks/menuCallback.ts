@@ -16,12 +16,12 @@ export const setupMenuCallbacks = (bot: Bot) => {
 Nama: ${user.first_name || '-'} ${user.last_name || ''}
 Username: ${user.username ? '@' + user.username : '-'}
 Telegram ID: ${user.telegram_id}
-Role: ${user.is_admin ? 'Admin' : 'User'}
+Role: ${user.role === 'admin' ? 'Admin' : 'User'}
 Terdaftar: ${new Date(user.created_at).toLocaleString('id-ID')}`;
 
     const kb = new InlineKeyboard()
       .text('💎 Membership', 'user:membership').row();
-    if (user.is_admin) {
+    if (user.role === 'admin') {
       kb.text('👑 Admin Panel', 'admin:menu').row();
     }
     kb.text('⏰ Reminders Saya', 'user:reminders')

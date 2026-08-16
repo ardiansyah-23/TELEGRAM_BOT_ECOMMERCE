@@ -8,7 +8,7 @@ export interface User {
   last_name: string | null;
   language_code: string | null;
   timezone: string;
-  is_admin: boolean;
+  role: Role;
   is_active: boolean;
   membership_level: 'free' | 'premium';
   membership_started_at: string | null;

@@ -44,8 +44,8 @@ ALTER TABLE system_settings ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Admins can manage logs" ON activity_logs
     FOR ALL
-    USING (EXISTS (SELECT 1 FROM users WHERE telegram_id = (SELECT auth.uid()::bigint) AND is_admin = true));
+    USING (EXISTS (SELECT 1 FROM users WHERE telegram_id = (SELECT auth.uid()::bigint) AND role = 'admin'));
 
 CREATE POLICY "Admins can manage settings" ON system_settings
     FOR ALL
-    USING (EXISTS (SELECT 1 FROM users WHERE telegram_id = (SELECT auth.uid()::bigint) AND is_admin = true));
+    USING (EXISTS (SELECT 1 FROM users WHERE telegram_id = (SELECT auth.uid()::bigint) AND role = 'admin'));
