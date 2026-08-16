@@ -83,21 +83,47 @@ export const setupOrdersCallback = (bot: any) => {
     const order_id = ctx.match[1];
     
     try {
-      await ctx.editMessageText('🔄 Menghasilkan link pembayaran...');
+      const data = await getOrderById(order_id);
+      if (!data) {
+        return ctx.answerCallbackQuery('❌ Pesanan tidak ditemukan.');
+      }
       
-      const { url } = await paymentService.generatePaymentUrl(order_id, ctx.from!.id);
+      const { order } = data;
+      
+      // Mengambil URL QRIS dari environment variables atau menggunakan placeholder
+      const qrisUrl = process.env.QRIS_IMAGE_URL || 'https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg';
+      
+      let msg = `💳 PEMBAYARAN MANUAL QRIS\n\n`;
+      msg += `Pesanan: ${order.order_number}\n`;
+      msg += `Total Tagihan: **Rp ${order.total.toLocaleString('id-ID')}**\n\n`;
+      msg += `Silakan scan gambar QRIS di bawah ini untuk melakukan pembayaran.\n\n`;
+      msg += `Jika sudah berhasil transfer, silakan klik tombol "📸 Kirim Bukti Pembayaran" di bawah ini.`;
       
       const kb = new InlineKeyboard()
-        .url('💳 Lanjutkan Pembayaran', url)
+        .text('📸 Kirim Bukti Pembayaran', `shop:payment_proof:${order_id}`)
         .row()
         .text('📦 Kembali ke Pesanan', `shop:order:${order_id}`);
         
-      await ctx.editMessageText(`💳 PEMBAYARAN\n\nSilakan klik tombol di bawah untuk melakukan pembayaran.`, { reply_markup: kb });
+      // Menghapus pesan sebelumnya agar bisa mengirim foto dengan caption baru
+      await ctx.deleteMessage();
+      await ctx.replyWithPhoto(qrisUrl, { 
+        caption: msg, 
+        reply_markup: kb,
+        parse_mode: 'Markdown'
+      });
       
     } catch (e: any) {
       const kb = new InlineKeyboard().text('⬅️ Kembali', `shop:order:${order_id}`);
-      await ctx.editMessageText(`❌ Gagal menghasilkan link pembayaran: ${e.message}`, { reply_markup: kb });
+      await ctx.editMessageText(`❌ Gagal memproses pembayaran: ${e.message}`, { reply_markup: kb });
     }
     await ctx.answerCallbackQuery();
+  });
+
+  bot.callbackQuery(/shop:payment_proof:(.+)/, async (ctx: any) => {
+    const order_id = ctx.match[1];
+    // @ts-ignore
+    ctx.session.payment_order_id = order_id;
+    await ctx.answerCallbackQuery();
+    await ctx.conversation.enter('paymentProofConversation');
   });
 };

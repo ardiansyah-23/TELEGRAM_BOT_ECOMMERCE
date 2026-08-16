@@ -70,4 +70,64 @@ export const setupAdminPaymentsCallback = (bot: any) => {
     await ctx.editMessageText(msg, { reply_markup: kb });
     await ctx.answerCallbackQuery();
   });
+
+  bot.callbackQuery(/admin:payment:approve:(.+)/, requireAdmin as any, async (ctx: any) => {
+    const order_id = ctx.match[1];
+    
+    // Update order status to paid
+    const { error } = await supabase.from('orders').update({ status: 'paid' }).eq('id', order_id);
+    
+    if (error) {
+      return ctx.answerCallbackQuery('❌ Gagal mengupdate status pesanan.');
+    }
+    
+    const { data: order } = await supabase.from('orders').select('telegram_id, order_number').eq('id', order_id).single();
+    
+    // Notify User
+    if (order && order.telegram_id) {
+      try {
+        await bot.api.sendMessage(
+          order.telegram_id,
+          `🎉 **Pembayaran Berhasil!**\n\nPembayaran untuk pesanan **${order.order_number}** telah diverifikasi oleh Admin. Terima kasih telah berbelanja!`,
+          { parse_mode: 'Markdown' }
+        );
+      } catch (e) {
+        console.error('Failed to notify user', e);
+      }
+    }
+    
+    await ctx.editMessageCaption({ caption: ctx.callbackQuery.message.caption + '\n\n**[STATUS: DITERIMA]**', parse_mode: 'Markdown' });
+    await ctx.editMessageReplyMarkup({ reply_markup: new InlineKeyboard() });
+    await ctx.answerCallbackQuery('Pembayaran diterima!');
+  });
+
+  bot.callbackQuery(/admin:payment:reject:(.+)/, requireAdmin as any, async (ctx: any) => {
+    const order_id = ctx.match[1];
+    
+    // Update order status to failed/cancelled
+    const { error } = await supabase.from('orders').update({ status: 'cancelled' }).eq('id', order_id);
+    
+    if (error) {
+      return ctx.answerCallbackQuery('❌ Gagal mengupdate status pesanan.');
+    }
+    
+    const { data: order } = await supabase.from('orders').select('telegram_id, order_number').eq('id', order_id).single();
+    
+    // Notify User
+    if (order && order.telegram_id) {
+      try {
+        await bot.api.sendMessage(
+          order.telegram_id,
+          `❌ **Pembayaran Ditolak**\n\nMohon maaf, bukti pembayaran untuk pesanan **${order.order_number}** ditolak oleh Admin. Pesanan Anda telah dibatalkan.`,
+          { parse_mode: 'Markdown' }
+        );
+      } catch (e) {
+        console.error('Failed to notify user', e);
+      }
+    }
+    
+    await ctx.editMessageCaption({ caption: ctx.callbackQuery.message.caption + '\n\n**[STATUS: DITOLAK]**', parse_mode: 'Markdown' });
+    await ctx.editMessageReplyMarkup({ reply_markup: new InlineKeyboard() });
+    await ctx.answerCallbackQuery('Pembayaran ditolak!');
+  });
 };

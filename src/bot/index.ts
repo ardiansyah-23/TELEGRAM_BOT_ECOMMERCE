@@ -20,6 +20,7 @@ import { searchConversation } from './conversations/search';
 import { addCategoryConversation, addProductConversation } from './conversations/admin_product';
 import { checkoutVoucherConversation } from './conversations/checkout_voucher';
 import { createReminderConversation } from './conversations/create_reminder';
+import { paymentProofConversation } from './conversations/payment_proof';
 import { setupSubscribeCommands } from './commands/subscribe';
 import type { MyContext } from './types';
 
@@ -55,6 +56,7 @@ bot.use(createConversation(addCategoryConversation as any) as any);
 bot.use(createConversation(addProductConversation as any) as any);
 bot.use(createConversation(checkoutVoucherConversation as any) as any);
 bot.use(createConversation(createReminderConversation as any) as any);
+bot.use(createConversation(paymentProofConversation as any) as any);
 
 // Global middleware for auto-register and logging
 bot.use(autoRegisterAndLogMiddleware);
