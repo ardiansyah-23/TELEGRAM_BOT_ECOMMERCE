@@ -8,6 +8,7 @@ export const config = {
   WEBHOOK_URL: process.env.WEBHOOK_URL,
   SUPABASE_URL: process.env.SUPABASE_URL,
   SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
+  SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
   ADMIN_TELEGRAM_ID: process.env.ADMIN_TELEGRAM_ID,
 };
 
@@ -15,6 +16,6 @@ export const config = {
 if (!config.BOT_TOKEN) {
   throw new Error('BOT_TOKEN is not defined in environment variables');
 }
-if (!config.SUPABASE_URL || !config.SUPABASE_ANON_KEY) {
+if (!config.SUPABASE_URL || (!config.SUPABASE_ANON_KEY && !config.SUPABASE_SERVICE_ROLE_KEY)) {
   throw new Error('Supabase credentials are not defined in environment variables');
 }
