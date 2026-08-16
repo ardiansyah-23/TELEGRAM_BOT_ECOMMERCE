@@ -15,12 +15,12 @@ export const setupStartCommand = (bot: Bot) => {
     }
     const welcomeMessage = `Halo ${ctx.from?.first_name || 'Pengguna'}! 👋\n\nSelamat datang di Bot Telegram. Gunakan menu di bawah untuk navigasi.`;
     
-    const webAppUrl = process.env.WEB_APP_URL || 'https://example.com';
+    const webAppUrl = process.env.WEB_APP_URL || 'https://telegram-bot-ecommerce-v2.vercel.app';
     const keyboard = new InlineKeyboard()
       .webApp('🌐 Buka Aplikasi', webAppUrl)
       .row()
-      .text('🛍 Belanja', 'menu_shop')
-      .text('🛒 Keranjang', 'menu_cart')
+      .text('🛍 Belanja', 'shop:categories')
+      .text('🛒 Keranjang', 'shop:cart')
       .row()
       .text('👤 Profil & Membership', 'menu_profile');
 
