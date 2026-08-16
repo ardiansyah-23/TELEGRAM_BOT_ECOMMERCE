@@ -45,11 +45,13 @@ export const setupProductsCallback = (bot: any) => {
     
     if (product.stock > 0) {
       kb.text('🛒 Tambah ke Keranjang', `shop:cart:add:${product.id}`).row();
+      kb.text('💳 Beli Langsung', `shop:cart:buynow:${product.id}`).row();
     } else {
       kb.text('❌ Stok Habis', 'noop').row();
     }
     
-    kb.text('⬅️ Kembali', `shop:category:${product.category_id}`);
+    kb.text('⬅️ Kembali', `shop:category:${product.category_id}`).row();
+    kb.text('🏠 Menu Utama', 'menu:main');
     
     await ctx.editMessageText(msg, { reply_markup: kb });
     await ctx.answerCallbackQuery();

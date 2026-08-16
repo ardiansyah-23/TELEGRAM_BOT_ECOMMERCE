@@ -57,7 +57,34 @@ export const setupCartCallback = (bot: any) => {
     }
     
     await addToCart(ctx.from!.id, product_id, 1);
+    
+    // Update the message keyboard to show a "Lihat Keranjang" button
+    const kb = new InlineKeyboard()
+      .text('✅ Ditambahkan!', 'noop').row()
+      .text('🛒 Lihat Keranjang', 'shop:cart').row()
+      .text('⬅️ Kembali', `shop:category:${p.category_id}`).row()
+      .text('🏠 Menu Utama', 'menu:main');
+      
+    await ctx.editMessageReplyMarkup({ reply_markup: kb });
     await ctx.answerCallbackQuery('✅ Ditambahkan ke keranjang!');
+  });
+
+  bot.callbackQuery(/shop:cart:buynow:(.+)/, async (ctx: any) => {
+    const product_id = ctx.match[1];
+    const p = await getProductById(product_id);
+    if (!p || p.stock < 1) {
+      return ctx.answerCallbackQuery('❌ Gagal: Stok habis atau produk tidak ditemukan.');
+    }
+    
+    await addToCart(ctx.from!.id, product_id, 1);
+    await ctx.answerCallbackQuery('Mengarahkan ke pembayaran...');
+    
+    // Redirect to checkout
+    // Simulate clicking checkout
+    ctx.match = null; // reset match
+    // Re-use checkout flow by simply calling the checkout callback handler if possible, 
+    // or just show the cart right away
+    await showCart(ctx);
   });
 
   bot.callbackQuery(/shop:cart:plus:(.+)/, async (ctx: any) => {
