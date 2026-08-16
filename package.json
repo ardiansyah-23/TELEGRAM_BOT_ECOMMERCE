@@ -23,10 +23,10 @@
     "grammy": "^1.45.1"
   },
   "devDependencies": {
-    "@types/node": "^26.2.0",
-    "@vercel/node": "^5.10.1",
+    "@types/node": "^20.14.0",
+    "@vercel/node": "^3.0.12",
     "ts-node": "^10.9.2",
-    "typescript": "^7.0.2",
+    "typescript": "^5.5.4",
     "vitest": "^4.1.10"
   }
 }
